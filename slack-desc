@@ -1,11 +1,11 @@
-boost: boost (C++ library)
+boost: boost (collection of portable C++ source libraries)
 boost:
-boost: Boost is a huge cross-platform C++ library, which provides
-boost: templates for filesystem, regex, smart pointers, signals etc.
-boost: It works well with the standard C++ library providing libraries
-boost: that are intended to be widely useful, and usable across a broad
-boost: spectrum of applications. The Boost license encourages both
-boost: commercial and non-commercial use.
+boost: Boost is portable C++ library containing many useful classes: regular
+boost: expressions, graph components and algorithms, multidimensional arrays,
+boost: unnamed functions (lambda functions), memory management classes and
+boost: thread library.
+boost: Boost works under many unices and Windows platform.
+boost:
 boost:
 boost: Packaged by Georgi D. Sotirov <gdsotirov@dir.bg>
 boost:

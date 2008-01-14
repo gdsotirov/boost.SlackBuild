@@ -10,7 +10,7 @@
 NAME=boost
 VERSION=1.34.1
 VERSTR=${VERSION//./_}
-BUILD=1
+BUILD=2
 
 TMP=${TMP:-/tmp}
 CWD=${CWD:-`cwd`}
@@ -41,11 +41,8 @@ mkdir obj
 $BJAM \
   release \
   "-sBUILD=<optimization>speed <inlining>full <link>shared <threading>single/multi" \
-  "-sNO_COMPRESSION=0" \
-  "-sHAVE_ICU=1 -sICU_PATH=/usr" \
-  "-sZLIB_INCLUDE=/usr/include" "-sZLIB_LIBPATH=/usr/lib" \
-  "-sBZIP2_INCLUDE=/usr/include" "-sBZIP2_LIBPATH=/usr/lib" \
-  "-sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION" \
+  -sHAVE_ICU=1 \
+  -sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION \
   --toolset=gcc \
   --layout=system \
   --builddir=obj \
@@ -60,11 +57,8 @@ $BJAM \
 $BJAM \
   release \
   "-sBUILD=<optimization>speed <inlining>full <link>shared <threading>single/multi" \
-  "-sNO_COMPRESSION=0" \
-  "-sHAVE_ICU=1 -sICU_PATH=/usr" \
-  "-sZLIB_INCLUDE=/usr/include" "-sZLIB_LIBPATH=/usr/lib" \
-  "-sBZIP2_INCLUDE=/usr/include" "-sBZIP2_LIBPATH=/usr/lib" \
-  "-sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION" \
+  -sHAVE_ICU=1 \
+  -sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION \
   --toolset=gcc \
   --layout=system \
   --builddir=obj \
@@ -92,9 +86,9 @@ install -m 644 $CWD/slack-desc     $PKG/install/slack-desc
 install -m 644 $CWD/slack-required $PKG/install/slack-required
 
 mkdir -p $PKG/usr/src/slackbuilds/$NAME-$VERSION
-install -m 644 $CWD/slack-desc       $PKG/usr/src/slackbuilds/$NAME-$VERSION
-install -m 644 $CWD/slack-required   $PKG/usr/src/slackbuilds/$NAME-$VERSION
-install -m 644 $CWD/$NAME.SlackBuild $PKG/usr/src/slackbuilds/$NAME-$VERSION
+install -m 644 $CWD/slack-desc       $PKG/usr/src/slackbuilds/$NAME-$VERSION/slack-desc
+install -m 644 $CWD/slack-required   $PKG/usr/src/slackbuilds/$NAME-$VERSION/slack-required
+install -m 644 $CWD/$NAME.SlackBuild $PKG/usr/src/slackbuilds/$NAME-$VERSION/$NAME.SlackBuild
 
 cd $PKG
 PKGNAME=$NAME-$VERSION-$ARCH-$BUILD$MYIN

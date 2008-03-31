@@ -1,4 +1,5 @@
 bzip2 >= 1.0.4
+expat >= 2.0
 icu >= 3.8
 python >= 2.5
 zlib >= 1.2.3

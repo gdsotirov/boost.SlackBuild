@@ -8,9 +8,9 @@
 . ../slack-package.conf
 
 NAME=boost
-VERSION=1.34.1
+VERSION=1.35.0
 VERSTR=${VERSION//./_}
-BUILD=2
+BUILD=1
 
 TMP=${TMP:-/tmp}
 CWD=${CWD:-`cwd`}
@@ -29,8 +29,10 @@ PYTHON_VERSION=$(python -c 'import sys; print sys.version[:3]')
 
 # Bbuild bjam first
 ( cd tools/jam/src
-  ./build.sh gcc ) || exit $?
+  CFLAGS="$SLKCFLAGS -fno-strict-aliasing" CC=gcc ./build.sh cc )
+
 BJAM=$SRC/tools/jam/src/bin.linuxx86/bjam
+
 if [ ! -e $BJAM ]; then
   echo "Aborting. Can't use bjam executable in '$BJAM'"
   exit 1
@@ -38,11 +40,17 @@ fi
 
 # Build
 mkdir obj
-$BJAM \
+
+# The default from 1.35 it to build only shared multi-threaded libraries and
+# no way to change this
+$BJAM cxxflags="$SLKCFLAGS" \
   release \
-  "-sBUILD=<optimization>speed <inlining>full <link>shared <threading>single/multi" \
+  "-sBUILD=<optimization>speed <inlining>full" \
   -sHAVE_ICU=1 \
   -sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION \
+  -sZLIB_INCLUDE=/usr/include -sZLIB_LIBPATH=/usr/lib \
+  -sBZIP2_INCLUDE=/usr/include -sBZIP2_LIBPATH=/usr/lib \
+  -sEXPAT_INCLUDE=/usr/include -sEXPAT_LIBPATH=/usr/lib \
   --toolset=gcc \
   --layout=system \
   --builddir=obj \
@@ -56,8 +64,6 @@ $BJAM \
 # Install
 $BJAM \
   release \
-  "-sBUILD=<optimization>speed <inlining>full <link>shared <threading>single/multi" \
-  -sHAVE_ICU=1 \
   -sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION \
   --toolset=gcc \
   --layout=system \
@@ -67,17 +73,14 @@ $BJAM \
 
 # Install binaries
 install -m 755 -d $PKG/usr/bin
-# Build and install bcp
 install -m 755 $SRC/dist/bin/bcp $PKG/usr/bin/bcp
-# Install bjam
 install -m 755 $BJAM $PKG/usr/bin/bjam
-# Install pyste
 install -m 755 $SRC/libs/python/pyste/install/pyste.py $PKG/usr/bin/pyste.py
 
 # Prepare package
 bin_perms $PKG
 ( cd $PKG; strip_bin; strip_lib )
-DOCFILES="$DOCFILES LICENSE_1_0.txt"
+DOCFILES="$DOCFILES LICENSE_1_0.txt people wiki"
 ( cd $SRC; create_docs $PKG $NAME-$VERSION )
 ( cd $PKG/usr/doc/$NAME-$VERSION; cp LICENSE_1_0.txt COPYING )
 

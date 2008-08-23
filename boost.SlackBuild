@@ -8,7 +8,7 @@
 . ../slack-package.conf
 
 NAME=boost
-VERSION=1.35.0
+VERSION=1.36.0
 VERSTR=${VERSION//./_}
 BUILD=1
 
@@ -33,6 +33,10 @@ PYTHON_VERSION=$(python -c 'import sys; print sys.version[:3]')
 
 BJAM=$SRC/tools/jam/src/bin.linuxx86/bjam
 
+# Seems this is the only way to configure
+sed -i "s/<threading>multi/<threading>multi <optimization>speed <inlining>full/" Jamroot
+sed -i "s/<link>shared <link>static/<link>shared/" Jamroot
+
 if [ ! -e $BJAM ]; then
   echo "Aborting. Can't use bjam executable in '$BJAM'"
   exit 1
@@ -41,11 +45,8 @@ fi
 # Build
 mkdir obj
 
-# The default from 1.35 it to build only shared multi-threaded libraries and
-# no way to change this
 $BJAM cxxflags="$SLKCFLAGS" \
   release \
-  "-sBUILD=<optimization>speed <inlining>full" \
   -sHAVE_ICU=1 \
   -sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION \
   -sZLIB_INCLUDE=/usr/include -sZLIB_LIBPATH=/usr/lib \

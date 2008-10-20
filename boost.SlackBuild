@@ -21,6 +21,15 @@ tar -jxvf $CWD/${NAME}_${VERSTR}.tar.bz2
 SRC=$TMP/${NAME}_${VERSTR}
 cd $SRC
 fix_source
+
+# Apply version specific patches (hot fixes)
+# see http://svn.boost.org/trac/boost/wiki/ReleasePractices/HotFixes
+patch -p2 < $CWD/$NAME-$VERSION-changeset_r48192.diff
+patch -p2 < $CWD/$NAME-$VERSION-changeset_r48374.diff
+patch -p2 < $CWD/$NAME-$VERSION-changeset_r48377.diff
+patch -p2 < $CWD/$NAME-$VERSION-changeset_r48462.diff
+patch -p2 < $CWD/$NAME-$VERSION-changeset_r48141.diff
+
 PKG=$TMP/package-$NAME
 mkdir -p $PKG
 

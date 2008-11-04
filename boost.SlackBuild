@@ -8,7 +8,7 @@
 . ../slack-package.conf
 
 NAME=boost
-VERSION=1.36.0
+VERSION=1.37.0
 VERSTR=${VERSION//./_}
 BUILD=1
 
@@ -24,11 +24,7 @@ fix_source
 
 # Apply version specific patches (hot fixes)
 # see http://svn.boost.org/trac/boost/wiki/ReleasePractices/HotFixes
-patch -p2 < $CWD/$NAME-$VERSION-changeset_r48192.diff
-patch -p2 < $CWD/$NAME-$VERSION-changeset_r48374.diff
-patch -p2 < $CWD/$NAME-$VERSION-changeset_r48377.diff
-patch -p2 < $CWD/$NAME-$VERSION-changeset_r48462.diff
-patch -p2 < $CWD/$NAME-$VERSION-changeset_r48141.diff
+# - no hotfixes for 1.37 yet
 
 PKG=$TMP/package-$NAME
 mkdir -p $PKG
@@ -43,6 +39,7 @@ PYTHON_VERSION=$(python -c 'import sys; print sys.version[:3]')
 BJAM=$SRC/tools/jam/src/bin.linuxx86/bjam
 
 # Seems this is the only way to configure
+#echo -e "\nusing mpi ;" >> tools/build/v2/user-config.jam
 sed -i "s/<threading>multi/<threading>multi <optimization>speed <inlining>full/" Jamroot
 sed -i "s/<link>shared <link>static/<link>shared/" Jamroot
 
@@ -65,6 +62,7 @@ $BJAM cxxflags="$SLKCFLAGS" \
   --layout=system \
   --builddir=obj \
   --prefix=/usr \
+  --with-mpi \
   stage || exit $?
 
 # Build bcp

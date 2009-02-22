@@ -1,5 +1,5 @@
 bzip2 >= 1.0.5
 expat >= 2.0.1
-icu >= 4.0
+icu >= 4.0.1
 python >= 2.5
 zlib >= 1.2.3

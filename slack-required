@@ -1,5 +1,7 @@
-bzip2 >= 1.0.5
-expat >= 2.0.1
+aaa_elflibs >= 13.0 | bzip2 >= 1.0.5
+cxxlibs >= 6.0.10 | gcc-g++ >= 4.3.3
+gcc >= 4.3.3
+glibc-solibs >= 2.9
 icu >= 4.2.1
-python >= 2.6
+openmpi >= 1.4.2
 zlib >= 1.2.3

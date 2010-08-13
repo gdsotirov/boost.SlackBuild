@@ -1,16 +1,25 @@
 #!/bin/sh
 #
-# SlackBuild for Boost
+# SlackBuild for Boost C++ libraries and tools
 # Written by Georgi D. Sotirov <gdsotirov@dir.bg>
 # Based on the Slackware Build script by Eric Hameleers <alien@slackware.com>
+# Based on scripts from Gentoo and Debian
 #
 
 . ../slack-package.conf
 
 NAME=boost
-VERSION=1.42.0
+VERSION=1.44.0
+VER_MAJ=1
+VER_MIN=44
+VER_PAT=0
 VERSTR=${VERSION//./_}
-BUILD=1
+BUILD=${BUILD:-1}
+
+SLKCXXFLAGS=`echo $SLKCFLAGS | sed s/\-O[123s]//`
+GCC_VERSION=$(gcc --version | head -1 | awk '{ print $3 }')
+GCC_MAJMIN=$(gcc --version | head -1 | awk '{print $3}' | awk -F'.' '{print $1 "" $2}')
+PYTHON_VERSION=$(python -c 'import sys; print sys.version[:3]')
 
 TMP=${TMP:-/tmp}
 CWD=${CWD:-`pwd`}
@@ -35,86 +44,136 @@ mkdir -p $PKG
 
 # Extract the source
 cd $TMP
-tar -jxvf $CWD/${NAME}_${VERSTR}.tar.bz2
+tar -xvf $CWD/${NAME}_${VERSTR}.tar.bz2
 cd $SRC
 fix_source
 
 # Apply version specific patches (hot fixes)
 # see http://svn.boost.org/trac/boost/wiki/ReleasePractices/HotFixes
-# - no hotfixes for 1.37 yet
+# No hotfixes for this release yet
 
-# This is the python we build against:
-PYTHON_VERSION=$(python -c 'import sys; print sys.version[:3]')
+# Configure by writing a specific user config
+cat > "$SRC/user-config.jam" << __EOF__ 
+# Define build variant
+variant slackbuild : release : <optimization>speed <debug-symbols>off ;
 
-# Bbuild bjam first
-( cd tools/jam/src
-  CFLAGS="$SLKCFLAGS -fno-strict-aliasing" CC=gcc ./build.sh cc )
+# Define toolset
+using gcc : ${GCC_VERSION} : ${ARCH}-slackware-linux-g++ : <cxxflags>"${SLKCXXFLAGS} -fno-strict-aliasing" ;
 
-BJAM=$SRC/tools/jam/src/bin.linuxx86/bjam
+# Define Python
+using python : ${PYTHON_VERSION} : /usr ;
 
-# Seems this is the only way to configure
-#echo -e "\nusing mpi ;" >> tools/build/v2/user-config.jam
-sed -i "s/<threading>multi/<threading>multi <optimization>speed <inlining>full/" Jamroot
-sed -i "s/<link>shared <link>static/<link>shared/" Jamroot
+# Define MPI
+using mpi ;
 
-if [ ! -e $BJAM ]; then
-  echo "Aborting. Can't use bjam executable in '$BJAM'"
+__EOF__
+
+# Build bjam first
+echo -e "\n\nStep 1 of 5: Build bjam\n\n"
+cd $SRC/tools/jam/src
+CFLAGS="$SLKCFLAGS -fno-strict-aliasing" ./build.sh cc || exit $?
+
+bjam="$SRC/tools/jam/src/bin.linuxx86/bjam"
+if [ ! -e $bjam ]; then
+  echo "Aborting. Can't use bjam executable in '$bjam'"
   exit 1
 fi
 
-# Build
-mkdir obj
+MYJAM="$bjam -q -d2 --user-config=$SRC/user-config.jam"
 
-$BJAM cxxflags="$SLKCFLAGS" \
-  release \
-  -sHAVE_ICU=1 \
-  -sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION \
-  -sZLIB_INCLUDE=/usr/include -sZLIB_LIBPATH=/usr/lib \
-  -sBZIP2_INCLUDE=/usr/include -sBZIP2_LIBPATH=/usr/lib \
-  -sEXPAT_INCLUDE=/usr/include -sEXPAT_LIBPATH=/usr/lib \
-  --toolset=gcc \
-  --layout=system \
-  --builddir=obj \
-  --prefix=/usr \
-  --with-mpi \
+# Build
+echo -e "\n\nStep 2 of 5: Build libraries\n\n"
+cd $SRC
+$MYJAM -j2 \
+  slackbuild \
+  "-sHAVE_ICU=1" \
+  --layout=versioned \
+  link=shared \
+  threading=single,multi \
+  runtime-link=shared \
   stage || exit $?
 
-# Build bcp
-( cd $SRC/tools/bcp
-  $BJAM release ) || exit $?
+echo -e "\n\nStep 3 of 5: Build tools\n\n"
+cd $SRC/tools
+$MYJAM \
+  slackbuild \
+  "-sHAVE_ICU=1" || exit $?
 
 # Install
-$BJAM \
-  release \
-  -sPYTHON_ROOT=/usr -sPYTHON_VERSION=$PYTHON_VERSION \
-  --toolset=gcc \
-  --layout=system \
-  --builddir=obj \
-  --prefix=$PKG/usr \
+echo -e "\n\nStep 4 of 5: Install & prepare\n\n"
+cd $SRC
+$MYJAM -j2 \
+  slackbuild \
+  "-sHAVE_ICU=1" \
+  --prefix="$PKG/usr" \
+  --layout=versioned \
+  link=shared \
+  threading=single,multi \
+  runtime-link=shared \
   install || exit $?
 
-# Install binaries
+# Additional installation steps
+PYTHON_SITEDIR=$PKG/usr/lib/python$PYTHON_VERSION/site-packages
+BOOST_SITEDIR=$PYTHON_SITEDIR/${NAME}_${VER_MAJ}_${VER_MIN}_${VER_PAT}
+#  - Install mpi
+install -m 755 -d $BOOST_SITEDIR
+mv $PKG/usr/lib/mpi.so $BOOST_SITEDIR/mpi.so
+touch $BOOST_SITEDIR/__init__.py
+
+#  - Install pyste
+cd $SRC/libs/python/pyste/install
+python setup.py install --no-compile --prefix=$PKG/usr --install-lib=$PYTHON_SITEDIR || exit $?
+
+#  - Install bjam and bcp binaries
 install -m 755 -d $PKG/usr/bin
 install -m 755 $SRC/dist/bin/bcp $PKG/usr/bin/bcp
-install -m 755 $BJAM $PKG/usr/bin/bjam
-install -m 755 $SRC/libs/python/pyste/install/pyste.py $PKG/usr/bin/pyste.py
+install -m 755 $bjam $PKG/usr/bin/bjam
+
+#  - Fix headers location and make sym link
+mv $PKG/usr/include/${NAME}-${VER_MAJ}_${VER_MIN}/${NAME} $PKG/usr/include/${NAME}-${VER_MAJ}.${VER_MIN}
+rm -rf $PKG/usr/include/${NAME}-${VER_MAJ}_${VER_MIN}
+( cd $PKG/usr/include
+  ln -s ${NAME}-${VER_MAJ}.${VER_MIN} ${NAME} )
+
+#  - Rename libraries and create sym links
+cd $PKG/usr/lib
+rm -f *.a
+rm -f `find . -type l`
+for lib in `ls *.so.*`; do
+  mv $lib `echo $lib | sed s/-gcc${GCC_MAJMIN}// | sed s/-${VER_MAJ}_${VER_MIN}//`
+done
+for lib in `ls *.so.$VERSION`; do
+  so_lib=$(echo $lib | sed s/.$VERSION//)
+  ln -s $lib $so_lib.$VER_MAJ.$VER_MIN
+  ln -s $lib $so_lib.$VER_MAJ
+  ln -s $lib $so_lib
+done
 
 # Prepare package
+cd $PKG
 bin_perms $PKG
 ( cd $PKG; strip_bin; strip_lib )
-DOCFILES="$DOCFILES LICENSE_1_0.txt people wiki"
+DOCFILES="$DOCFILES LICENSE_1_0.txt"
 ( cd $SRC; create_docs $PKG $NAME-$VERSION )
 ( cd $PKG/usr/doc/$NAME-$VERSION; cp LICENSE_1_0.txt COPYING )
+# Put README directing to official online site
+install -m 755 -d $PKG/usr/doc/$NAME-$VERSION/html
+install -m 644 $CWD/README-DOC-HTML $PKG/usr/share/$NAME-$VERSION/html/README
 
 mkdir -p $PKG/install
 install -m 644 $CWD/slack-desc     $PKG/install/slack-desc
 install -m 644 $CWD/slack-required $PKG/install/slack-required
+install -m 644 $CWD/slack-suggests $PKG/install/slack-suggests
 
-mkdir -p $PKG/usr/src/slackbuilds/$NAME-$VERSION
-install -m 644 $CWD/slack-desc       $PKG/usr/src/slackbuilds/$NAME-$VERSION/slack-desc
-install -m 644 $CWD/slack-required   $PKG/usr/src/slackbuilds/$NAME-$VERSION/slack-required
-install -m 644 $CWD/$NAME.SlackBuild $PKG/usr/src/slackbuilds/$NAME-$VERSION/$NAME.SlackBuild
+SB_DIR=$PKG/usr/src/slackbuilds/$NAME-$VERSION
+mkdir -p $SB_DIR
+install -m 644 $CWD/slack-desc       $SB_DIR/slack-desc
+install -m 644 $CWD/slack-required   $SB_DIR/slack-required
+install -m 644 $CWD/slack-suggests   $SB_DIR/slack-suggests
+install -m 644 $CWD/README-DOC-HTML  $SB_DIR/README-DOC-HTML
+install -m 644 $CWD/$NAME.SlackBuild $SB_DIR/$NAME.SlackBuild
 
+echo -e "\n\nStep 5 of 5: Package creation\n\n"
 cd $PKG
 PKGNAME=$NAME-$VERSION-$ARCH-$BUILD$MYIN
 makepkg -l y -c n $PKG_DIR/$PKGNAME.txz

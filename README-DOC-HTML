@@ -1,0 +1,12 @@
+About Boost's documentation
+
+The documentation of Boost distributed in the official release is
+pre-generated and not well suited to offline browsing (e.g. it includes
+many relative references to the boost package structure, which could not
+be easily represented into Slackware's package structure).
+
+Therefore, I suggest you use the online documentation at
+http://www.boost.org/doc/ - it's always accurate and updated.
+
+--
+Georgi D. Sotirov

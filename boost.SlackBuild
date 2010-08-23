@@ -84,7 +84,7 @@ MYJAM="$bjam -q -d2 --user-config=$SRC/user-config.jam"
 # Build
 echo -e "\n\nStep 2 of 5: Build libraries\n\n"
 cd $SRC
-$MYJAM -j2 \
+$MYJAM -2 \
   slackbuild \
   "-sHAVE_ICU=1" \
   --layout=versioned \
@@ -102,7 +102,7 @@ $MYJAM \
 # Install
 echo -e "\n\nStep 4 of 5: Install & prepare\n\n"
 cd $SRC
-$MYJAM -j2 \
+$MYJAM \
   slackbuild \
   "-sHAVE_ICU=1" \
   --prefix="$PKG/usr" \

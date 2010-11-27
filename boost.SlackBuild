@@ -9,9 +9,9 @@
 . ../slack-package.conf
 
 NAME=boost
-VERSION=1.44.0
+VERSION=1.45.0
 VER_MAJ=1
-VER_MIN=44
+VER_MIN=45
 VER_PAT=0
 VERSTR=${VERSION//./_}
 BUILD=${BUILD:-1}
@@ -61,7 +61,7 @@ variant slackbuild : release : <optimization>speed <debug-symbols>off ;
 using gcc : ${GCC_VERSION} : ${ARCH}-slackware-linux-g++ : <cxxflags>"${SLKCXXFLAGS} -fno-strict-aliasing" ;
 
 # Define Python
-using python : ${PYTHON_VERSION} : /usr ;
+#using python : ${PYTHON_VERSION} : /usr ;
 
 # Define MPI
 using mpi ;
@@ -70,10 +70,12 @@ __EOF__
 
 # Build bjam first
 echo -e "\n\nStep 1 of 5: Build bjam\n\n"
-cd $SRC/tools/jam/src
-CFLAGS="$SLKCFLAGS -fno-strict-aliasing" ./build.sh cc || exit $?
+CFLAGS="$SLKCFLAGS -fno-strict-aliasing" \
+./bootstrap.sh --prefix=/usr \
+               --with-icu \
+               --with-toolset=gcc || exit $?
 
-bjam="$SRC/tools/jam/src/bin.linuxx86/bjam"
+bjam="$SRC/bjam"
 if [ ! -e $bjam ]; then
   echo "Aborting. Can't use bjam executable in '$bjam'"
   exit 1
@@ -158,7 +160,7 @@ DOCFILES="$DOCFILES LICENSE_1_0.txt"
 ( cd $PKG/usr/doc/$NAME-$VERSION; cp LICENSE_1_0.txt COPYING )
 # Put README directing to official online site
 install -m 755 -d $PKG/usr/doc/$NAME-$VERSION/html
-install -m 644 $CWD/README-DOC-HTML $PKG/usr/share/$NAME-$VERSION/html/README
+install -m 644 $CWD/README-DOC-HTML $PKG/usr/doc/$NAME-$VERSION/html/README
 
 mkdir -p $PKG/install
 install -m 644 $CWD/slack-desc     $PKG/install/slack-desc

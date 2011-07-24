@@ -19,16 +19,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # 
-# $Id: boost.SlackBuild,v 1.16 2011/03/13 00:34:52 gsotirov Exp $
+# $Id: boost.SlackBuild,v 1.17 2011/07/24 10:55:09 gsotirov Exp $
 #
 
 . ../slack-package.conf
 
 NAME=boost
-VERSION=1.46.1
+VERSION=1.47.0
 VER_MAJ=1
-VER_MIN=46
-VER_PAT=1
+VER_MIN=47
+VER_PAT=0
 VERSTR=${VERSION//./_}
 BUILD=${BUILD:-1}
 
@@ -84,16 +84,16 @@ using mpi ;
 
 __EOF__
 
-# Build bjam first
-echo -e "\n\nStep 1 of 5: Build bjam\n\n"
+# Build b2 (old bjam) first
+echo -e "\n\nStep 1 of 5: Build b2\n\n"
 CFLAGS="$SLKCFLAGS -fno-strict-aliasing" \
 ./bootstrap.sh --prefix=/usr \
                --with-icu \
                --with-toolset=gcc || exit $?
 
-bjam="$SRC/bjam"
+bjam="$SRC/b2"
 if [ ! -e $bjam ]; then
-  echo "Aborting. Can't use bjam executable in '$bjam'"
+  echo "Aborting. Can't use b2 executable in '$bjam'"
   exit 1
 fi
 
@@ -142,10 +142,10 @@ touch $BOOST_SITEDIR/__init__.py
 cd $SRC/libs/python/pyste/install
 python setup.py install --no-compile --prefix=$PKG/usr --install-lib=$PYTHON_SITEDIR || exit $?
 
-#  - Install bjam and bcp binaries
+#  - Install b2 and bcp binaries
 install -m 755 -d $PKG/usr/bin
 install -m 755 $SRC/dist/bin/bcp $PKG/usr/bin/bcp
-install -m 755 $bjam $PKG/usr/bin/bjam
+install -m 755 $bjam $PKG/usr/bin/b2
 
 #  - Fix headers location and make sym link
 mv $PKG/usr/include/${NAME}-${VER_MAJ}_${VER_MIN}/${NAME} $PKG/usr/include/${NAME}-${VER_MAJ}.${VER_MIN}

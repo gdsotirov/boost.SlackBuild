@@ -19,16 +19,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # 
-# $Id: boost.SlackBuild,v 1.17 2011/07/24 10:55:09 gsotirov Exp $
+# $Id: boost.SlackBuild,v 1.18 2011/10/16 11:11:32 gsotirov Exp $
 #
 
 . ../slack-package.conf
 
 NAME=boost
-VERSION=1.47.0
 VER_MAJ=1
 VER_MIN=47
 VER_PAT=0
+VERSION="$VER_MAJ.$VER_MIN.$VER_PAT"
 VERSTR=${VERSION//./_}
 BUILD=${BUILD:-1}
 
@@ -97,7 +97,7 @@ if [ ! -e $bjam ]; then
   exit 1
 fi
 
-MYJAM="$bjam -q -d2 --user-config=$SRC/user-config.jam"
+MYJAM="$bjam -q -d2 -j4 --user-config=$SRC/user-config.jam"
 
 # Build
 echo -e "\n\nStep 2 of 5: Build libraries\n\n"
@@ -124,6 +124,7 @@ $MYJAM \
   slackbuild \
   "-sHAVE_ICU=1" \
   --prefix="$PKG/usr" \
+  --libdir="$PKG/usr/lib${LIBDIRSUFFIX}" \
   --layout=versioned \
   link=shared \
   threading=single,multi \
@@ -131,11 +132,11 @@ $MYJAM \
   install || exit $?
 
 # Additional installation steps
-PYTHON_SITEDIR=$PKG/usr/lib/python$PYTHON_VERSION/site-packages
+PYTHON_SITEDIR=$PKG/usr/lib${LIBDIRSUFFIX}/python$PYTHON_VERSION/site-packages
 BOOST_SITEDIR=$PYTHON_SITEDIR/${NAME}_${VER_MAJ}_${VER_MIN}_${VER_PAT}
 #  - Install mpi
 install -m 755 -d $BOOST_SITEDIR
-mv $PKG/usr/lib/mpi.so $BOOST_SITEDIR/mpi.so
+mv $PKG/usr/lib${LIBDIRSUFFIX}/mpi.so $BOOST_SITEDIR/mpi.so
 touch $BOOST_SITEDIR/__init__.py
 
 #  - Install pyste
@@ -154,7 +155,7 @@ rm -rf $PKG/usr/include/${NAME}-${VER_MAJ}_${VER_MIN}
   ln -s ${NAME}-${VER_MAJ}.${VER_MIN} ${NAME} )
 
 #  - Rename libraries and create sym links
-cd $PKG/usr/lib
+cd $PKG/usr/lib${LIBDIRSUFFIX}
 rm -f *.a
 rm -f `find . -type l`
 for lib in `ls *.so.*`; do

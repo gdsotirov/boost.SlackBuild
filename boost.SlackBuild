@@ -19,14 +19,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # 
-# $Id: boost.SlackBuild,v 1.19 2011/11/16 21:09:24 gsotirov Exp $
+# $Id: boost.SlackBuild,v 1.20 2012/02/25 14:46:25 gsotirov Exp $
 #
 
 . ../../slack-package.conf
 
 NAME=boost
 VER_MAJ=1
-VER_MIN=48
+VER_MIN=49
 VER_PAT=0
 VERSION="$VER_MAJ.$VER_MIN.$VER_PAT"
 VERSTR=${VERSION//./_}

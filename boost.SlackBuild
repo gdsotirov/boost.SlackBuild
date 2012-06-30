@@ -3,7 +3,7 @@
 # Slackware build script for Boost C++ libraries and tools
 # Based on the Slackware Build script by Eric Hameleers <alien@slackware.com>
 # Based on scripts from Gentoo and Debian
-# Copyright (C) 2007-2011 Georgi D. Sotirov <gdsotirov@dir.bg>
+# Copyright (C) 2007-2012 Georgi D. Sotirov <gdsotirov@dir.bg>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,14 +19,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # 
-# $Id: boost.SlackBuild,v 1.20 2012/02/25 14:46:25 gsotirov Exp $
+# $Id: boost.SlackBuild,v 1.21 2012/06/30 18:58:55 gsotirov Exp $
 #
 
 . ../../slack-package.conf
 
 NAME=boost
 VER_MAJ=1
-VER_MIN=49
+VER_MIN=50
 VER_PAT=0
 VERSION="$VER_MAJ.$VER_MIN.$VER_PAT"
 VERSTR=${VERSION//./_}

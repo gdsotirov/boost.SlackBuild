@@ -2,6 +2,6 @@ aaa_elflibs >= 14.0 | bzip2 >= 1.0.6
 cxxlibs >= 6.0.17 | gcc-g++ >= 4.7.1
 gcc >= 4.7.1
 glibc-solibs >= 2.15
-icu4c >= 49.1.2
+icu4c >= 50.1.2
 openmpi >= 1.6.3
 zlib >= 1.2.6

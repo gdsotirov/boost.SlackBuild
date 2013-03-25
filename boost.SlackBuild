@@ -3,7 +3,7 @@
 # Slackware build script for Boost C++ libraries and tools
 # Based on the Slackware Build script by Eric Hameleers <alien@slackware.com>
 # Based on scripts from Gentoo and Debian
-# Copyright (C) 2007-2012 Georgi D. Sotirov <gdsotirov@dir.bg>
+# Copyright (C) 2007-2013 Georgi D. Sotirov <gdsotirov@dir.bg>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,14 +19,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # 
-# $Id: boost.SlackBuild,v 1.23 2012/12/25 12:02:28 gsotirov Exp $
+# $Id: boost.SlackBuild,v 1.24 2013/03/25 21:39:02 gsotirov Exp $
 #
 
 . ../../slack-package.conf
 
 NAME=boost
 VER_MAJ=1
-VER_MIN=52
+VER_MIN=53
 VER_PAT=0
 # See important note for this version and above at
 # http://www.boost.org/users/news/a_special_note_for_boost_1_52_0_and_higher.html
@@ -62,13 +62,16 @@ mkdir -p $PKG
 
 # Extract the source
 cd $TMP
-tar -xvf $CWD/${NAME}_${VERSTR}.tar.bz2
+tar -xvf $CWD/${NAME}_${VERSTR}.tar.bz2 || exit 3
 cd $SRC
 fix_source
 
 # Apply version specific patches (hot fixes)
 # see http://svn.boost.org/trac/boost/wiki/ReleasePractices/HotFixes
 # No hotfixes for this release yet
+
+# Apply other patches
+patch -p1 < $CWD/$NAME-$VERSION-fix8078.diff || exit 4
 
 # Configure by writing a specific user config
 cat > "$SRC/user-config.jam" << __EOF__ 
@@ -88,7 +91,7 @@ __EOF__
 
 # Build b2 (old bjam) first
 echo -e "\n\nStep 1 of 5: Build b2\n\n"
-CFLAGS="$SLKCFLAGS -fno-strict-aliasing" \
+CFLAGS="$SLKCFLAGS -fno-strict-aliasing -std=gnu++11" \
 ./bootstrap.sh --prefix=/usr \
                --with-icu \
                --with-toolset=gcc || exit $?
@@ -99,7 +102,7 @@ if [ ! -e $bjam ]; then
   exit 1
 fi
 
-MYJAM="$bjam -q -d2 -j4 --user-config=$SRC/user-config.jam"
+MYJAM="$bjam -q -d2 --user-config=$SRC/user-config.jam"
 
 # Build
 echo -e "\n\nStep 2 of 5: Build libraries\n\n"
@@ -192,6 +195,8 @@ install -m 644 $CWD/slack-desc       $SB_DIR/slack-desc
 install -m 644 $CWD/slack-required   $SB_DIR/slack-required
 install -m 644 $CWD/slack-suggests   $SB_DIR/slack-suggests
 install -m 644 $CWD/README-DOC-HTML  $SB_DIR/README-DOC-HTML
+install -m 644 $CWD/$NAME-$VERSION-fix8078.diff
+                                     $SB_DIR/$NAME-$VERSION-fix8078.diff
 install -m 644 $CWD/$NAME.SlackBuild $SB_DIR/$NAME.SlackBuild
 
 echo -e "\n\nStep 5 of 5: Package creation\n\n"

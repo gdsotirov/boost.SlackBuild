@@ -1,0 +1,65 @@
+# This patch originates from Changeset 83556 (see https://svn.boost.org/trac/boost/changeset/83556), which
+# relates to bug 8078 (see https://svn.boost.org/trac/boost/ticket/8078) and
+# fixes compilation of tools/regression/src/library_status.cppwith for C++03 compilers
+diff -urNad boost_1_53_0-orig/tools/regression/src/library_status.cpp boost_1_53_0/tools/regression/src/library_status.cpp
+--- boost_1_53_0-orig/tools/regression/src/library_status.cpp	2012-12-11 16:42:26.000000000 +0200
++++ boost_1_53_0/tools/regression/src/library_status.cpp	2013-03-25 20:50:38.589858325 +0200
+@@ -170,18 +170,19 @@
+ 
+     //  find_element  ------------------------------------------------------------//
+ 
++    struct element_equal {
++        const string & m_name;
++        element_equal(const string & name) :
++            m_name(name)
++        {}
++        bool operator()(const xml::element_ptr & xep) const {
++            return xep.get()->name == m_name;
++        }
++    };
++
+     xml::element_list::const_iterator find_element(
+         const xml::element & root, const string & name 
+     ){
+-        struct element_equal {
+-            const string & m_name;
+-            element_equal(const string & name) :
+-                m_name(name)
+-            {}
+-            bool operator()(const xml::element_ptr & xep) const {
+-                return xep.get()->name == m_name;
+-            }
+-        };
+         return std::find_if(
+             root.elements.begin(), 
+             root.elements.end(), 
+@@ -202,19 +203,20 @@
+ 
+     //  attribute_value  ----------------------------------------------------------//
+ 
++    struct attribute_equal {
++        const string & m_name;
++        attribute_equal(const string & name) :
++            m_name(name)
++        {}
++        bool operator()(const xml::attribute & a) const {
++            return a.name == m_name;
++        }
++    };
++
+     const string & attribute_value( 
+         const xml::element & element,
+         const string & attribute_name 
+     ){
+-        struct attribute_equal {
+-            const string & m_name;
+-            attribute_equal(const string & name) :
+-                m_name(name)
+-            {}
+-            bool operator()(const xml::attribute & a) const {
+-                return a.name == m_name;
+-            }
+-        };
+         xml::attribute_list::const_iterator itr;
+         itr = std::find_if(
+             element.attributes.begin(), 

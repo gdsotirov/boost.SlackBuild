@@ -6,7 +6,7 @@ many relative references to the boost package structure, which could not
 be easily represented into Slackware's package structure).
 
 Therefore, I suggest you use the online documentation at
-http://www.boost.org/doc/ - it's always accurate and updated.
+https://www.boost.org/doc/ - it's always accurate and updated.
 
 --
 Georgi D. Sotirov

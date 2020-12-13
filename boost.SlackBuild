@@ -19,6 +19,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+# Visit SlackPack at https://sotirov-bg.net/slackpack/
+#
 
 . ../../slack-package.conf
 
@@ -27,7 +29,7 @@ VER_MAJ=1
 VER_MIN=53
 VER_PAT=0
 # See important note for this version and above at
-# http://www.boost.org/users/news/a_special_note_for_boost_1_52_0_and_higher.html
+# https://www.boost.org/users/news/a_special_note_for_boost_1_52_0_and_higher.html
 VERSION="$VER_MAJ.$VER_MIN.$VER_PAT"
 VERSTR=${VERSION//./_}
 BUILD=${BUILD:-1}
@@ -65,7 +67,7 @@ cd $SRC
 fix_source
 
 # Apply version specific patches (hot fixes)
-# see http://svn.boost.org/trac/boost/wiki/ReleasePractices/HotFixes
+# see https://svn.boost.org/trac/boost/wiki/ReleasePractices/HotFixes
 # No hotfixes for this release yet
 
 # Apply other patches
